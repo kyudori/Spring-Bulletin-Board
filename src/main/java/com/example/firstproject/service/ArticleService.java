@@ -5,6 +5,9 @@ import com.example.firstproject.entity.Article;
 import com.example.firstproject.repository.ArticleRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +19,11 @@ import java.util.stream.Collectors;
 public class ArticleService {
     @Autowired
     private ArticleRepository articleRepository;
+
+    public Page<Article> divide(int page, int size) {
+        // PageRequest.of를 사용하여 페이지 요청 객체 생성
+        return articleRepository.findAll(PageRequest.of(page, size));
+    }
 
     public List<Article> index() {
         return articleRepository.findAll();
@@ -84,5 +92,18 @@ public class ArticleService {
 
         // 4. 결과값 반환하기
         return articleList;
+    }
+
+    @Transactional
+    public Page<Article> getArticleList(Pageable pageable) {
+        return articleRepository.findAll(pageable);
+    }
+
+    @Transactional
+    public Boolean getSizeCheck(Pageable pageable) {
+        Page<Article> saved = getArticleList(pageable);
+        Boolean check = saved.hasNext();
+
+        return check;
     }
 }

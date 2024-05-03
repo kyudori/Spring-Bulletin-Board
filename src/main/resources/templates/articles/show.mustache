@@ -5,6 +5,7 @@
     <tr>
         <th scope="col">Id</th>
         <th scope="col">Title</th>
+        <th scope="col">작성자</th>
         <th scope="col">Content</th>
     </tr>
     </thead>
@@ -13,6 +14,7 @@
         <tr>
             <th>{{id}}</th>
             <td>{{title}}</td>
+            <td>{{writer}}</td>
             <td>{{content}}</td>
         </tr>
     {{/article}}
@@ -23,5 +25,5 @@
 <a href="/articles/{{article.id}}/delete" class="btn btn-danger">Delete</a>
 <a href="/articles">Go to Article List</a>
 
-{{>comments/_comments}} <!-- 상세 페이지에 댓글 뷰 파일 삽입>
+{{>comments/_comments}}
 {{>layouts/footer}}

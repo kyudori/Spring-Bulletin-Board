@@ -26,8 +26,7 @@ public class CommentApiController {
 
     // 2. 댓글 생성
     @PostMapping("/api/articles/{articleId}/comments")
-    public ResponseEntity<CommentDto> create(@PathVariable Long articleId,
-                                             @RequestBody CommentDto dto) {
+    public ResponseEntity<CommentDto> create(@PathVariable Long articleId, @RequestBody CommentDto dto) {
         // 서비스에게 위임
         CommentDto createdDto = commentService.create(articleId, dto);
 
@@ -37,8 +36,7 @@ public class CommentApiController {
 
     // 3. 댓글 수정
     @PatchMapping("/api/comments/{id}")
-    public ResponseEntity<CommentDto> update(@PathVariable Long id,
-                                             @RequestBody CommentDto dto) {
+    public ResponseEntity<CommentDto> update(@PathVariable Long id, @RequestBody CommentDto dto) {
         // 서비스에게 위임
         CommentDto updatedDto = commentService.update(id, dto);
 

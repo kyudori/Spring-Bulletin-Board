@@ -1,26 +1,33 @@
 package com.example.firstproject.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
+@ToString(exclude = "comments")
 @Getter
+@Setter
 @Entity
-public class Article {
+public class Article extends Time{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(length = 100, nullable = false)
+    private String writer;
+
+    @Column(length = 100, nullable = false)
     private String title;
 
     @Column
     private String content;
+
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
 
     public void patch(Article article) {
         if (article.title != null)

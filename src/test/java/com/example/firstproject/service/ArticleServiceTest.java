@@ -21,9 +21,9 @@ class ArticleServiceTest {
     @Test
     void index() {
         // 1. 예상 데이터
-        Article a = new Article(1L, "가가가가", "1111");
-        Article b = new Article(2L, "나나나나", "2222");
-        Article c = new Article(3L, "다다다다", "3333");
+        Article a = new Article(1L, "kyudori", "가가가가", "1111");
+        Article b = new Article(2L,"kyudori", "나나나나", "2222");
+        Article c = new Article(3L, "hahamen", "다다다다", "3333");
         List<Article> expected = new ArrayList<Article>(Arrays.asList(a, b, c));
 
         // 2. 실제 데이터
@@ -37,7 +37,7 @@ class ArticleServiceTest {
     void show_성공_존재하는_id_입력() {
         // 1. 예상 데이터
         Long id = 1L;
-        Article expected = new Article(id, "가가가가", "1111");
+        Article expected = new Article(id, "kyudori","가가가가", "1111");
 
         // 2. 실제 데이터
         Article article = articleService.show(id);
@@ -64,10 +64,11 @@ class ArticleServiceTest {
     @Test
     void create_성공_title과_content만_있는_dto_입력() {
         // 1. 예상 데이터
+        String writer = "kyudori";
         String title = "라라라라";
         String content = "4444";
-        ArticleForm dto = new ArticleForm(null, title, content);
-        Article expected = new Article(4L, title, content);
+        ArticleForm dto = new ArticleForm(null, writer, title, content);
+        Article expected = new Article(4L, writer, title, content);
 
         // 2. 실제 데이터
         Article article = articleService.create(dto);
@@ -81,9 +82,10 @@ class ArticleServiceTest {
     void create_실패_id가_포함된_dto_입력() {
         // 1. 예상 데이터
         Long id = 4L;
+        String writer = "hahaha";
         String title = "라라라라";
         String content = "4444";
-        ArticleForm dto = new ArticleForm(id, title, content);
+        ArticleForm dto = new ArticleForm(id, writer, title, content);
         Article expected = null;
 
         // 2. 실제 데이터
@@ -98,10 +100,11 @@ class ArticleServiceTest {
     void update_성공_존재하는_id와_title_content가_있는_dto_입력() {
         // 예상 데이터
         Long id = 1L;
+        String writer = "kyudori";
         String title = "가나다라";
         String content = "1234";
-        ArticleForm dto = new ArticleForm(id, title, content);
-        Article expected = new Article(id, title,content);
+        ArticleForm dto = new ArticleForm(id, writer, title, content);
+        Article expected = new Article(id, writer, title,content);
 
         // 실제 데이터
         Article article = articleService.update(id, dto);
@@ -115,10 +118,11 @@ class ArticleServiceTest {
     void update_성공_존재하는_id와_title만_있는_dto_입력() {
         // 예상 데이터
         Long id = 1L;
+        String writer = "kyudori";
         String title = "AAAA";
         String content = null;
-        ArticleForm dto = new ArticleForm(id, title, content);
-        Article expected = new Article(1L, "AAAA" , "1111");
+        ArticleForm dto = new ArticleForm(id, writer,title, content);
+        Article expected = new Article(1L, "kyudori", "AAAA" , "1111");
 
         // 실제 데이터
         Article article = articleService.update(id, dto);
@@ -132,9 +136,10 @@ class ArticleServiceTest {
     void update_실패_존재하지_않는_id의_dto_입력() {
         // 예상 데이터
         Long id = -1L;
+        String writer = "hahamen";
         String title = "가나다라";
         String content = "1234";
-        ArticleForm dto = new ArticleForm(id, title, content);
+        ArticleForm dto = new ArticleForm(id, writer, title, content);
         Article expected = null;
 
         // 실제 데이터
@@ -149,7 +154,7 @@ class ArticleServiceTest {
     void delete_성공_존재하는_id_입력() {
         // 예상 데이터
         Long id = 1L;
-        Article expected = new Article(id, "가가가가", "1111");
+        Article expected = new Article(id, "kyudori","가가가가", "1111");
 
         // 실제 데이터
         Article article = articleService.delete(id);

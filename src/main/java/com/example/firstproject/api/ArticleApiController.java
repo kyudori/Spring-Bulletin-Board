@@ -5,6 +5,8 @@ import com.example.firstproject.entity.Article;
 import com.example.firstproject.service.ArticleService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,8 +21,12 @@ public class ArticleApiController {
 
     // GET
     @GetMapping("/api/articles")
-    public List<Article> index() {
-        return articleService.index();
+    public ResponseEntity<Page<Article>> index(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "5") int size) {
+
+        Page<Article> articles = articleService.divide(page, size);
+        return ResponseEntity.ok(articles);
     }
 
     @GetMapping("/api/articles/{id}")
@@ -40,8 +46,7 @@ public class ArticleApiController {
 
     // PATCH
     @PatchMapping("/api/articles/{id}")
-    public ResponseEntity<Article> update(@PathVariable Long id,
-                                          @RequestBody ArticleForm dto) {
+    public ResponseEntity<Article> update(@PathVariable Long id, @RequestBody ArticleForm dto) {
         Article updated = articleService.update(id, dto);
         return (updated != null) ?
                 ResponseEntity.status(HttpStatus.OK).body(updated):
@@ -58,8 +63,7 @@ public class ArticleApiController {
     }
 
     @PostMapping("/api/transaction-test")
-    public ResponseEntity<List<Article>> transactionTest(@RequestBody
-                                                         List<ArticleForm> dtos) {
+    public ResponseEntity<List<Article>> transactionTest(@RequestBody List<ArticleForm> dtos) {
         List<Article> createdList = articleService.createArticles(dtos);
         return (createdList != null) ?
                 ResponseEntity.status(HttpStatus.OK).body(createdList) :

@@ -29,7 +29,7 @@ class CommentRepositoryTest {
             List<Comment> comments = commentRepository.findByArticleId(articleId);
 
             // 3. 예상 데이터
-            Article article = new Article(4L, "당신의 인생 영화는?", "댓글 고");
+            Article article = new Article(4L,"kyudori", "당신의 인생 영화는?", "댓글 고");
             Comment a = new Comment(1L, article, "Park", "굿 윌 헌팅");
             Comment b = new Comment(2L, article, "Kim", "아이 엠 샘");
             Comment c = new Comment(3L, article, "Choi", "쇼생크 탈출");
@@ -49,7 +49,7 @@ class CommentRepositoryTest {
             List<Comment> comments = commentRepository.findByArticleId(articleId);
 
             // 3. 예상 데이터
-            Article article = new Article(1L, "가가가가", "1111");
+            Article article = new Article(1L, "kyudori","가가가가", "1111");
             List<Comment> expected = Arrays.asList();
 
             // 4. 비교 및 검증

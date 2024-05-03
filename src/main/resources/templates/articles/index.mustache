@@ -5,6 +5,7 @@
     <tr>
         <th scope="col">Id</th>
         <th scope="col">Title</th>
+        <th scope="col">작성자</th>
         <th scope="col">Content</th>
     </tr>
     </thead>
@@ -13,13 +14,23 @@
         <tr>
             <th>{{id}}</th>
             <td><a href="/articles/{{id}}">{{title}}</a></td>
+            <td>{{writer}}</td>
             <td>{{content}}</td>
         </tr>
     {{/articleList}}
     </tbody>
 </table>
 
-<a href="/articles/new">New Article</a>
+<ul class="pagination justify-content-center">
+    <li class="page-item"><a class="page-link" href="?page={{previous}}">Previous</a></li>
+    {{#check}}
+        <li class="page-item"><a class="page-link" href="?page={{next}}">Next</a></li>
+    {{/check}}
+    {{^check}}
+        <li class="page-item disabled"><a class="page-link" href="?page={{next}}">Next</a></li>
+    {{/check}}
+</ul>
+
+<a href="/articles/new" class="btn btn-primary">New Article</a>
 
 {{>layouts/footer}}
-

@@ -4,9 +4,13 @@ import com.example.firstproject.dto.ArticleForm;
 import com.example.firstproject.dto.CommentDto;
 import com.example.firstproject.entity.Article;
 import com.example.firstproject.repository.ArticleRepository;
+import com.example.firstproject.service.ArticleService;
 import com.example.firstproject.service.CommentService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Controller
@@ -24,6 +29,9 @@ public class ArticleController {
 
     @Autowired
     private CommentService commentService; //서비스 객체 주입
+
+    @Autowired
+    private ArticleService articleService;
 
     @GetMapping("/articles/new")
     public String newArticleForm() {
@@ -65,14 +73,11 @@ public class ArticleController {
     }
 
     @GetMapping("/articles")
-    public String index(Model model) {
-        // 1. 모든 데이터 가져오기
-        List<Article> articleEntityList = articleRepository.findAll();
-
-        // 2. 모델에 데이터 등록하기
-        model.addAttribute("articleList", articleEntityList);
-
-        // 3. 뷰 페이지 설정하기
+    public String index(Model model, @PageableDefault(size = 5, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        model.addAttribute("articleList", articleService.getArticleList(pageable));
+        model.addAttribute("previous", pageable.previousOrFirst().getPageNumber());
+        model.addAttribute("next", pageable.next().getPageNumber());
+        model.addAttribute("check", articleService.getSizeCheck(pageable));
         return "articles/index";
     }
 
@@ -92,21 +97,23 @@ public class ArticleController {
     public String update(ArticleForm form) {
         log.info(form.toString());
 
-        // 1. DTO를 엔티티로 변환하기
-        Article articleEntity = form.toEntity();
-        log.info(articleEntity.toString());
+        Optional<Article> existingArticleOpt = articleRepository.findById(form.getId());
 
-        // 2. 엔티티를 DB로 저장하기
-        // 2-1. DB에서 기존 데이터 가져오기
-        Article target = articleRepository.findById(articleEntity.getId()).orElse(null);
+        if (existingArticleOpt.isPresent()) {
+            Article existingArticle = existingArticleOpt.get();
 
-        // 2-2. 기존 데이터 값을 갱신하기
-        if (target != null) {
-            articleRepository.save(articleEntity);  // 엔티티를 DB에 저장(갱신)
+            // DTO에서 받은 정보로 기존 기사 업데이트 (writer 제외)
+            existingArticle.setTitle(form.getTitle());
+            existingArticle.setContent(form.getContent());
+
+            articleRepository.save(existingArticle);
+            log.info("Updated article: {}", existingArticle);
+
+            return "redirect:/articles/" + existingArticle.getId();
+        } else {
+            log.warn("Attempted to update non-existent article with id {}", form.getId());
+            return "redirect:/articles";
         }
-
-        // 3. 수정 결과 페이지로 리다이렉트 하기
-        return "redirect:/articles/" + articleEntity.getId();
     }
 
     @GetMapping("/articles/{id}/delete")
