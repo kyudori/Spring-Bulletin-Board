@@ -1,8 +1,13 @@
 package com.example.firstproject.api;
 
 import com.example.firstproject.dto.CommentDto;
+import com.example.firstproject.entity.Article;
+import com.example.firstproject.entity.Comment;
 import com.example.firstproject.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -60,5 +65,17 @@ public class CommentApiController {
         String username = "kyudori"; //이름 임시로 고정
         boolean check = commentService.checkMyComment(id, username);
         return ResponseEntity.status(HttpStatus.OK).body(check);
+    }
+
+    // 본인이 작성한 댓글 모두 보기
+    @GetMapping("api/comments/mycomments")
+    public ResponseEntity<List<Comment>> showMyComment(){
+        String username = "kyudori"; //이름 임시로 고정
+
+        List<Comment> myComment = commentService.showMyComment(username);
+
+        return (myComment != null) ?
+                ResponseEntity.status(HttpStatus.OK).body(myComment):
+                ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

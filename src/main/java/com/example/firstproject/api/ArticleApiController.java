@@ -22,6 +22,12 @@ public class ArticleApiController {
     private ArticleService articleService;
 
     // GET
+    @GetMapping("/api/articles/all")
+    public List<Article> index() {
+        return articleService.index();
+    }
+
+    // GET
     @GetMapping("/api/articles")
     public ResponseEntity<Page<Article>> index(
             @RequestParam(value = "page", defaultValue = "0") int page,
@@ -73,7 +79,9 @@ public class ArticleApiController {
         Pageable pageable = PageRequest.of(page, size);
 
         Page<Article> articles = articleService.search(keyword, pageable);
-            return ResponseEntity.ok(articles);
+            return (articles != null) ?
+                    ResponseEntity.status(HttpStatus.OK).body(articles):
+                    ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         }
 
     // 작성자 확인
@@ -82,6 +90,19 @@ public class ArticleApiController {
         String username = "kyudori"; //이름 임시로 고정
         boolean check = articleService.checkMyArticle(id, username);
         return ResponseEntity.status(HttpStatus.OK).body(check);
+    }
+
+    // 본인이 작성한 글 모두 보기
+    @GetMapping("api/articles/myarticles")
+    public ResponseEntity<Page<Article>> showMyArticle(@RequestParam(value = "page", defaultValue = "0") int page,
+                                                 @RequestParam(value = "size", defaultValue = "5") int size){
+        String username = "kyudori"; //이름 임시로 고정
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Article> articles = articleService.printMyArticle(username, pageable);
+        return (articles != null) ?
+                ResponseEntity.status(HttpStatus.OK).body(articles):
+                ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PostMapping("/api/transaction-test")

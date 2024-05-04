@@ -87,4 +87,8 @@ public class CommentService {
         Optional<Comment> comment = commentRepository.findById(id);
         return comment.map(checkArticle -> checkArticle.getNickname().equals(username)).orElse(false);
     }
+
+    public List<Comment> showMyComment(String username) {
+        return commentRepository.findByNickname(username);
+    }
 }

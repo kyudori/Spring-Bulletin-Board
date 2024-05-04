@@ -117,4 +117,8 @@ public class ArticleService {
         Optional<Article> article = articleRepository.findById(id);
         return article.map(checkArticle -> checkArticle.getWriter().equals(username)).orElse(false);
     }
+
+    public Page<Article> printMyArticle(String username, Pageable pageable) {
+        return articleRepository.findByWriter(username, pageable);
+    }
 }
