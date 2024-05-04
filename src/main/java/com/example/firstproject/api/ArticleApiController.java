@@ -6,6 +6,8 @@ import com.example.firstproject.service.ArticleService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -62,6 +64,26 @@ public class ArticleApiController {
                 ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
 
+    // Search
+    @GetMapping("api/articles/search")
+    public ResponseEntity<Page<Article>> search(@RequestParam(name = "keyword") String keyword,
+        @RequestParam(value = "page", defaultValue = "0") int page,
+        @RequestParam(value = "size", defaultValue = "5") int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Article> articles = articleService.search(keyword, pageable);
+            return ResponseEntity.ok(articles);
+        }
+
+    // 작성자 확인
+    @GetMapping("api/articles/check/{id}")
+    public ResponseEntity<Boolean> checkMyArticle(@PathVariable Long id){
+        String username = "kyudori"; //이름 임시로 고정
+        boolean check = articleService.checkMyArticle(id, username);
+        return ResponseEntity.status(HttpStatus.OK).body(check);
+    }
+
     @PostMapping("/api/transaction-test")
     public ResponseEntity<List<Article>> transactionTest(@RequestBody List<ArticleForm> dtos) {
         List<Article> createdList = articleService.createArticles(dtos);
@@ -69,5 +91,4 @@ public class ArticleApiController {
                 ResponseEntity.status(HttpStatus.OK).body(createdList) :
                 ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
-
 }

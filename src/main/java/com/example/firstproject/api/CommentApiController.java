@@ -53,4 +53,12 @@ public class CommentApiController {
         // 결과 응답
         return ResponseEntity.status(HttpStatus.OK).body(deletedDto);
     }
+
+    // 작성자 확인
+    @GetMapping("api/comments/check/{id}")
+    public ResponseEntity<Boolean> checkMyComment(@PathVariable Long id){
+        String username = "kyudori"; //이름 임시로 고정
+        boolean check = commentService.checkMyComment(id, username);
+        return ResponseEntity.status(HttpStatus.OK).body(check);
+    }
 }

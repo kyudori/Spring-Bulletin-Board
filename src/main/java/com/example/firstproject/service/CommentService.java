@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -80,5 +81,10 @@ public class CommentService {
 
         // 3. 삭제 댓글을 DTO로 변환 및 반환
         return CommentDto.createCommentDto(target);
+    }
+
+    public boolean checkMyComment(Long id, String username) {
+        Optional<Comment> comment = commentRepository.findById(id);
+        return comment.map(checkArticle -> checkArticle.getNickname().equals(username)).orElse(false);
     }
 }

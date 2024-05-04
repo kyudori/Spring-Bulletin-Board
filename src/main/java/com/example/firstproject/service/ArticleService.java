@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -105,5 +106,15 @@ public class ArticleService {
         Boolean check = saved.hasNext();
 
         return check;
+    }
+
+    public Page<Article> search(String keyword, Pageable pageable) {
+        //keyword 기반 title, content 내용 검색
+        return articleRepository.findByTitleContainingOrContentContaining(keyword, keyword, pageable);
+    }
+
+    public boolean checkMyArticle(Long id, String username) {
+        Optional<Article> article = articleRepository.findById(id);
+        return article.map(checkArticle -> checkArticle.getWriter().equals(username)).orElse(false);
     }
 }
