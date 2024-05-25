@@ -12,7 +12,7 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
-public class Article extends Time{
+public class Article extends Time {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -29,6 +29,10 @@ public class Article extends Time{
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
+
     public void patch(Article article) {
         if (article.title != null)
             this.title = article.title;
@@ -36,3 +40,4 @@ public class Article extends Time{
             this.content = article.content;
     }
 }
+

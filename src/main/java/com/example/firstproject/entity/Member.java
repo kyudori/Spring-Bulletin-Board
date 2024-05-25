@@ -1,17 +1,23 @@
 package com.example.firstproject.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-@Entity
+
+import java.util.Collection;
+import java.util.List;
+
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
+@ToString(exclude = "comments")
 @Getter
-public class Member {
+@Setter
+@Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+public class Member extends Time {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,5 +30,11 @@ public class Member {
 
     @Column(nullable = false)
     private String password;
-}
 
+    @Column(nullable = false)
+    private String role;
+
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority(role));
+    }
+}

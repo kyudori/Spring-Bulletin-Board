@@ -1,124 +1,86 @@
 package com.example.firstproject.service;
 
-import com.example.firstproject.dto.ArticleForm;
+import com.example.firstproject.dto.ArticleDto;
 import com.example.firstproject.entity.Article;
+import com.example.firstproject.entity.Member;
 import com.example.firstproject.repository.ArticleRepository;
-import lombok.extern.slf4j.Slf4j;
+import com.example.firstproject.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
-@Slf4j
-@Service // 서비스 객체 선언
+@Service
 public class ArticleService {
+
     @Autowired
     private ArticleRepository articleRepository;
 
-    public Page<Article> divide(int page, int size) {
-        // PageRequest.of를 사용하여 페이지 요청 객체 생성
-        return articleRepository.findAll(PageRequest.of(page, size));
-    }
+    @Autowired
+    private MemberRepository memberRepository;
 
     public List<Article> index() {
         return articleRepository.findAll();
+    }
+
+    public Page<Article> getArticles(Pageable pageable) {
+        return articleRepository.findAll(pageable);
+    }
+
+    public Page<Article> search(String keyword, String content, Pageable pageable) {
+        return articleRepository.findByTitleContainingOrContentContaining(keyword, content, pageable);
     }
 
     public Article show(Long id) {
         return articleRepository.findById(id).orElse(null);
     }
 
-    public Article create(ArticleForm dto) {
+    public Article create(ArticleDto dto) {
+        String username = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
+        Member member = memberRepository.findByEmail(username).orElseThrow(() -> new RuntimeException("User not found"));
+
+        dto.setMember(member);
         Article article = dto.toEntity();
-        if (article.getId() != null) {
-            return null;
-        }
         return articleRepository.save(article);
     }
 
-    public Article update(Long id, ArticleForm dto) {
-        // 1. DTO -> 엔티티 변환하기
-        Article article = dto.toEntity();
-        log.info("id: {}, article: {}", id, article.toString());
-
-        // 2. 타겟 조회하기
-        Article target = articleRepository.findById(id).orElse(null);
-
-        // 3. 잘못된 요청 처리하기
-        if (target == null || id != article.getId()) {
-            // 400번, 잘못된 요청 응답!
-            log.info("잘못된 요청! id: {}, article: {}", id, article.toString());
-            return null;
-        }
-
-        // 4. 업데이트 및 정상 응답(200)하기
-        target.patch(article);
-        Article updated = articleRepository.save(target);
-        return updated;
+    public Article update(Long id, ArticleDto dto) {
+        Article article = articleRepository.findById(id).orElseThrow(() -> new RuntimeException("Article not found"));
+        article.patch(dto.toEntity());
+        return articleRepository.save(article);
     }
 
     public Article delete(Long id) {
-        // 1. 대상 찾기
-        Article target = articleRepository.findById(id).orElse(null);
-
-        // 2. 잘못된 요청 처리하기
-        if (target == null) {
-            return null;
-        }
-
-        // 3. 대상 삭제하기
-        articleRepository.delete(target);
-        return target;
-    }
-    @Transactional
-    public List<Article> createArticles(List<ArticleForm> dtos) {
-        // 1. dto 묶음을 엔티티 묶음으로 변환하기
-        List<Article> articleList = dtos.stream()
-                .map(dto -> dto.toEntity())
-                .collect(Collectors.toList());
-
-        // 2. 엔티티 묶음을 DB에 저장하기
-        articleList.stream()
-                .forEach(article -> articleRepository.save(article));
-
-        // 3. 강제 예외 발생시키기
-        articleRepository.findById(-1L)
-                .orElseThrow(() -> new IllegalArgumentException("에러 발생!"));
-
-        // 4. 결과값 반환하기
-        return articleList;
+        Article article = articleRepository.findById(id).orElseThrow(() -> new RuntimeException("Article not found"));
+        articleRepository.delete(article);
+        return article;
     }
 
-    @Transactional
+    public boolean checkMyArticle(Long id, String username) {
+        Article article = articleRepository.findById(id).orElse(null);
+        return article != null && article.getMember().getEmail().equals(username);
+    }
+
+    public Page<Article> printMyArticle(String username, Pageable pageable) {
+        Member member = memberRepository.findByEmail(username).orElseThrow(() -> new RuntimeException("User not found"));
+        return articleRepository.findByMember(member, pageable);
+    }
+
+    public List<Article> createArticles(List<ArticleDto> dtos) {
+        List<Article> articles = dtos.stream().map(ArticleDto::toEntity).toList();
+        return articleRepository.saveAll(articles);
+    }
+
+    // 새로운 메서드 추가
     public Page<Article> getArticleList(Pageable pageable) {
         return articleRepository.findAll(pageable);
     }
 
-    @Transactional
-    public Boolean getSizeCheck(Pageable pageable) {
-        Page<Article> saved = getArticleList(pageable);
-        Boolean check = saved.hasNext();
-
-        return check;
-    }
-
-    public Page<Article> search(String keyword, Pageable pageable) {
-        //keyword 기반 title, content 내용 검색
-        return articleRepository.findByTitleContainingOrContentContaining(keyword, keyword, pageable);
-    }
-
-    public boolean checkMyArticle(Long id, String username) {
-        Optional<Article> article = articleRepository.findById(id);
-        return article.map(checkArticle -> checkArticle.getWriter().equals(username)).orElse(false);
-    }
-
-    public Page<Article> printMyArticle(String username, Pageable pageable) {
-        return articleRepository.findByWriter(username, pageable);
+    public boolean getSizeCheck(Pageable pageable) {
+        return articleRepository.findAll(pageable).getTotalElements() > 0;
     }
 }

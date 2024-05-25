@@ -1,6 +1,6 @@
-package com.example.firstproject.api;
+package com.example.firstproject.apicontroller;
 
-import com.example.firstproject.dto.ArticleForm;
+import com.example.firstproject.dto.ArticleDto;
 import com.example.firstproject.entity.Article;
 import com.example.firstproject.service.ArticleService;
 import lombok.extern.slf4j.Slf4j;
@@ -8,9 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,7 +34,8 @@ public class ArticleApiController {
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "5") int size) {
 
-        Page<Article> articles = articleService.divide(page, size);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Article> articles = articleService.getArticles(pageable);
         return ResponseEntity.ok(articles);
     }
 
@@ -44,20 +46,19 @@ public class ArticleApiController {
 
     // POST
     @PostMapping("/api/articles")
-    public ResponseEntity<Article> create(@RequestBody ArticleForm dto) {
+    public ResponseEntity<Article> create(@RequestBody ArticleDto dto) {
         Article created = articleService.create(dto);
         return (created != null) ?
                 ResponseEntity.status(HttpStatus.OK).body(created) :
                 ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-
     }
 
     // PATCH
     @PatchMapping("/api/articles/{id}")
-    public ResponseEntity<Article> update(@PathVariable Long id, @RequestBody ArticleForm dto) {
+    public ResponseEntity<Article> update(@PathVariable Long id, @RequestBody ArticleDto dto) {
         Article updated = articleService.update(id, dto);
         return (updated != null) ?
-                ResponseEntity.status(HttpStatus.OK).body(updated):
+                ResponseEntity.status(HttpStatus.OK).body(updated) :
                 ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
 
@@ -71,45 +72,36 @@ public class ArticleApiController {
     }
 
     // Search
-    @GetMapping("api/articles/search")
+    // http://localhost:8080/api/articles/search?keyword=검색할거&page=0&size=5
+    @GetMapping("/api/articles/search")
     public ResponseEntity<Page<Article>> search(@RequestParam(name = "keyword") String keyword,
-        @RequestParam(value = "page", defaultValue = "0") int page,
-        @RequestParam(value = "size", defaultValue = "5") int size) {
+                                                @RequestParam(value = "page", defaultValue = "0") int page,
+                                                @RequestParam(value = "size", defaultValue = "5") int size) {
 
         Pageable pageable = PageRequest.of(page, size);
+        Page<Article> articles = articleService.search(keyword, keyword,pageable);
+        return (articles != null) ?
+                ResponseEntity.status(HttpStatus.OK).body(articles) :
+                ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
 
-        Page<Article> articles = articleService.search(keyword, pageable);
-            return (articles != null) ?
-                    ResponseEntity.status(HttpStatus.OK).body(articles):
-                    ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        }
-
-    // 작성자 확인
-    @GetMapping("api/articles/check/{id}")
-    public ResponseEntity<Boolean> checkMyArticle(@PathVariable Long id){
-        String username = "kyudori"; //이름 임시로 고정
+    // 내가 쓴 글 확인
+    @GetMapping("/api/articles/check/{id}")
+    public ResponseEntity<Boolean> checkMyArticle(@PathVariable Long id) {
+        String username = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
         boolean check = articleService.checkMyArticle(id, username);
         return ResponseEntity.status(HttpStatus.OK).body(check);
     }
 
     // 본인이 작성한 글 모두 보기
-    @GetMapping("api/articles/myarticles")
+    @GetMapping("/api/articles/myarticles")
     public ResponseEntity<Page<Article>> showMyArticle(@RequestParam(value = "page", defaultValue = "0") int page,
-                                                 @RequestParam(value = "size", defaultValue = "5") int size){
-        String username = "kyudori"; //이름 임시로 고정
+                                                       @RequestParam(value = "size", defaultValue = "5") int size) {
+        String username = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
         Pageable pageable = PageRequest.of(page, size);
-
         Page<Article> articles = articleService.printMyArticle(username, pageable);
         return (articles != null) ?
-                ResponseEntity.status(HttpStatus.OK).body(articles):
+                ResponseEntity.status(HttpStatus.OK).body(articles) :
                 ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
-    @PostMapping("/api/transaction-test")
-    public ResponseEntity<List<Article>> transactionTest(@RequestBody List<ArticleForm> dtos) {
-        List<Article> createdList = articleService.createArticles(dtos);
-        return (createdList != null) ?
-                ResponseEntity.status(HttpStatus.OK).body(createdList) :
-                ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
 }

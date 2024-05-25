@@ -1,6 +1,6 @@
 package com.example.firstproject.controller;
 
-import com.example.firstproject.dto.ArticleForm;
+import com.example.firstproject.dto.ArticleDto;
 import com.example.firstproject.dto.CommentDto;
 import com.example.firstproject.entity.Article;
 import com.example.firstproject.repository.ArticleRepository;
@@ -41,7 +41,7 @@ public class ArticleController {
     }
 
     @PostMapping("/articles/create")
-    public String createArticle(ArticleForm form) {
+    public String createArticle(ArticleDto form) {
         log.info(form.toString());
         // System.out.println(form.toString());
 
@@ -85,7 +85,7 @@ public class ArticleController {
 
     @GetMapping("/articles/search")
     public String search(Model model, @RequestParam(name = "keyword") String keyword, @PageableDefault(size = 5, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<Article> articles = articleService.search(keyword, pageable);
+        Page<Article> articles = articleService.search(keyword, keyword, pageable);
         model.addAttribute("articleList", articles);  // 검색 결과를 모델에 추가
         model.addAttribute("previous", pageable.previousOrFirst().getPageNumber());
         model.addAttribute("next", pageable.next().getPageNumber());
@@ -106,7 +106,7 @@ public class ArticleController {
     }
 
     @PostMapping("/articles/update")
-    public String update(ArticleForm form) {
+    public String update(ArticleDto form) {
         log.info(form.toString());
 
         Optional<Article> existingArticleOpt = articleRepository.findById(form.getId());

@@ -1,7 +1,7 @@
 package com.example.firstproject.controller;
 
 import com.example.firstproject.entity.Member;
-import com.example.firstproject.dto.MemberForm;
+import com.example.firstproject.dto.MemberDto;
 import com.example.firstproject.repository.MemberRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,9 +30,9 @@ public class MemberController {
     }
 
     @PostMapping("/join")
-    public String join(MemberForm memberForm) {
-        log.info(memberForm.toString());
-        Member member = memberForm.toEntity();
+    public String join(MemberDto memberDto) {
+        log.info(memberDto.toString());
+        Member member = memberDto.toEntity();
         log.info(member.toString());
         Member saved = memberRepository.save(member);
         log.info(saved.toString());
@@ -61,7 +61,7 @@ public class MemberController {
     }
 
     @PostMapping("/members/update")
-    public String update(MemberForm form) {
+    public String update(MemberDto form) {
         log.info(form.toString());
         Member memberEntity = form.toEntity();
         Member target = memberRepository.findById(memberEntity.getId()).orElse(null);

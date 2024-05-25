@@ -1,13 +1,9 @@
-package com.example.firstproject.api;
+package com.example.firstproject.apicontroller;
 
 import com.example.firstproject.dto.CommentDto;
-import com.example.firstproject.entity.Article;
 import com.example.firstproject.entity.Comment;
 import com.example.firstproject.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -1,6 +1,6 @@
 package com.example.firstproject.service;
 
-import com.example.firstproject.dto.ArticleForm;
+import com.example.firstproject.dto.ArticleDto;
 import com.example.firstproject.entity.Article;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,7 +67,7 @@ class ArticleServiceTest {
         String writer = "kyudori";
         String title = "라라라라";
         String content = "4444";
-        ArticleForm dto = new ArticleForm(null, writer, title, content);
+        ArticleDto dto = new ArticleDto(null, writer, title, content);
         Article expected = new Article(4L, writer, title, content);
 
         // 2. 실제 데이터
@@ -85,7 +85,7 @@ class ArticleServiceTest {
         String writer = "hahaha";
         String title = "라라라라";
         String content = "4444";
-        ArticleForm dto = new ArticleForm(id, writer, title, content);
+        ArticleDto dto = new ArticleDto(id, writer, title, content);
         Article expected = null;
 
         // 2. 실제 데이터
@@ -103,7 +103,7 @@ class ArticleServiceTest {
         String writer = "kyudori";
         String title = "가나다라";
         String content = "1234";
-        ArticleForm dto = new ArticleForm(id, writer, title, content);
+        ArticleDto dto = new ArticleDto(id, writer, title, content);
         Article expected = new Article(id, writer, title,content);
 
         // 실제 데이터
@@ -121,7 +121,7 @@ class ArticleServiceTest {
         String writer = "kyudori";
         String title = "AAAA";
         String content = null;
-        ArticleForm dto = new ArticleForm(id, writer,title, content);
+        ArticleDto dto = new ArticleDto(id, writer,title, content);
         Article expected = new Article(1L, "kyudori", "AAAA" , "1111");
 
         // 실제 데이터
@@ -139,7 +139,7 @@ class ArticleServiceTest {
         String writer = "hahamen";
         String title = "가나다라";
         String content = "1234";
-        ArticleForm dto = new ArticleForm(id, writer, title, content);
+        ArticleDto dto = new ArticleDto(id, writer, title, content);
         Article expected = null;
 
         // 실제 데이터
