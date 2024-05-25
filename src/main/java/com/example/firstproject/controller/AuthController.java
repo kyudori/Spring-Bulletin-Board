@@ -5,15 +5,15 @@ import com.example.firstproject.entity.Member;
 import com.example.firstproject.repository.MemberRepository;
 import com.example.firstproject.security.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -32,21 +32,6 @@ public class AuthController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @PostMapping("/login")
-    public Map<String, String> login(@RequestBody Map<String, String> request) {
-        try {
-            String email = request.get("email");
-            String password = request.get("password");
-            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
-            String token = jwtTokenProvider.createToken(authentication);
-            Map<String, String> response = new HashMap<>();
-            response.put("token", token);
-            return response;
-        } catch (AuthenticationException e) {
-            throw new RuntimeException("Invalid login credentials");
-        }
-    }
-
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody MemberDto memberDto) {
         if (memberRepository.findByEmail(memberDto.getEmail()).isPresent()) {
@@ -59,5 +44,30 @@ public class AuthController {
         Member member = memberDto.toEntity();
         memberRepository.save(member);
         return ResponseEntity.ok("User registered successfully");
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<Map<String, String>> login(@RequestBody Map<String, String> credentials) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(credentials.get("email"), credentials.get("password")));
+
+        String accessToken = jwtTokenProvider.createAccessToken(authentication);
+        String refreshToken = jwtTokenProvider.createRefreshToken(authentication);
+
+        return ResponseEntity.ok(Map.of("accessToken", accessToken, "refreshToken", refreshToken));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<Map<String, String>> refresh(@RequestBody Map<String, String> request) {
+        String refreshToken = request.get("refreshToken");
+        if (jwtTokenProvider.validateToken(refreshToken)) {
+            String username = jwtTokenProvider.getUsername(refreshToken);
+            UserDetails userDetails = (UserDetails) jwtTokenProvider.getAuthentication(refreshToken).getPrincipal();
+            String newAccessToken = jwtTokenProvider.createAccessToken(new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities()));
+
+            return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 }

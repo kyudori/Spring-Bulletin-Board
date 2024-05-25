@@ -10,7 +10,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import jakarta.servlet.http.HttpServletRequest; // 수정된 부분
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.Base64;
 import java.util.Date;
 
 @Component
@@ -19,8 +21,11 @@ public class JwtTokenProvider {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    @Value("${jwt.expiration}")
-    private long validityInMilliseconds;
+    @Value("${jwt.accessExpiration}")
+    private long accessValidityInMilliseconds;
+
+    @Value("${jwt.refreshExpiration}")
+    private long refreshValidityInMilliseconds;
 
     private final CustomUserDetailsService userDetailsService;
 
@@ -28,12 +33,32 @@ public class JwtTokenProvider {
         this.userDetailsService = userDetailsService;
     }
 
-    public String createToken(Authentication authentication) {
+    @PostConstruct
+    protected void init() {
+        this.secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
+    }
+
+    public String createAccessToken(Authentication authentication) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         Claims claims = Jwts.claims().setSubject(userDetails.getUsername());
 
         Date now = new Date();
-        Date validity = new Date(now.getTime() + validityInMilliseconds);
+        Date validity = new Date(now.getTime() + accessValidityInMilliseconds);
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(validity)
+                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .compact();
+    }
+
+    public String createRefreshToken(Authentication authentication) {
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        Claims claims = Jwts.claims().setSubject(userDetails.getUsername());
+
+        Date now = new Date();
+        Date validity = new Date(now.getTime() + refreshValidityInMilliseconds);
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -52,7 +77,7 @@ public class JwtTokenProvider {
         return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
     }
 
-    public String resolveToken(HttpServletRequest request) { // 수정된 부분
+    public String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
@@ -67,10 +92,5 @@ public class JwtTokenProvider {
         } catch (Exception e) {
             return false;
         }
-    }
-
-    // 추가: JWT에서 이메일을 추출하는 메서드
-    public String getUserEmailFromJWT(String token) {
-        return getUsername(token);
     }
 }
