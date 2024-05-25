@@ -72,14 +72,13 @@ public class ArticleApiController {
     }
 
     // Search
-    // http://localhost:8080/api/articles/search?keyword=검색할거&page=0&size=5
     @GetMapping("/api/articles/search")
     public ResponseEntity<Page<Article>> search(@RequestParam(name = "keyword") String keyword,
                                                 @RequestParam(value = "page", defaultValue = "0") int page,
                                                 @RequestParam(value = "size", defaultValue = "5") int size) {
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<Article> articles = articleService.search(keyword, keyword,pageable);
+        Page<Article> articles = articleService.search(keyword, keyword, pageable);
         return (articles != null) ?
                 ResponseEntity.status(HttpStatus.OK).body(articles) :
                 ResponseEntity.status(HttpStatus.NO_CONTENT).build();

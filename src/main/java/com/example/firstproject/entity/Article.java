@@ -1,5 +1,6 @@
 package com.example.firstproject.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,9 +19,6 @@ public class Article extends Time {
     private Long id;
 
     @Column(length = 100, nullable = false)
-    private String writer;
-
-    @Column(length = 100, nullable = false)
     private String title;
 
     @Column
@@ -29,6 +27,7 @@ public class Article extends Time {
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;

@@ -43,14 +43,14 @@ public class ArticleService {
         String username = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
         Member member = memberRepository.findByEmail(username).orElseThrow(() -> new RuntimeException("User not found"));
 
-        dto.setMember(member);
-        Article article = dto.toEntity();
+        Article article = dto.toEntity(member);
         return articleRepository.save(article);
     }
 
     public Article update(Long id, ArticleDto dto) {
         Article article = articleRepository.findById(id).orElseThrow(() -> new RuntimeException("Article not found"));
-        article.patch(dto.toEntity());
+        article.setTitle(dto.getTitle());
+        article.setContent(dto.getContent());
         return articleRepository.save(article);
     }
 
@@ -71,11 +71,14 @@ public class ArticleService {
     }
 
     public List<Article> createArticles(List<ArticleDto> dtos) {
-        List<Article> articles = dtos.stream().map(ArticleDto::toEntity).toList();
+        List<Article> articles = dtos.stream().map(dto -> {
+            String username = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
+            Member member = memberRepository.findByEmail(username).orElseThrow(() -> new RuntimeException("User not found"));
+            return dto.toEntity(member);
+        }).toList();
         return articleRepository.saveAll(articles);
     }
 
-    // 새로운 메서드 추가
     public Page<Article> getArticleList(Pageable pageable) {
         return articleRepository.findAll(pageable);
     }
