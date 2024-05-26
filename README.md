@@ -42,7 +42,7 @@ UserDetails, UserDetailsService
   ![image](https://github.com/kyudori/Spring-Bulletin-Board/assets/57388014/d737e191-d86f-44e3-ab79-5dae54994356)
   ![image](https://github.com/kyudori/Spring-Bulletin-Board/assets/57388014/c5b3c2ec-7453-40bd-8cf8-4e3bda22df08)
   ![image](https://github.com/kyudori/Spring-Bulletin-Board/assets/57388014/13074d22-9f9d-4064-89f6-04298dd670c0)
--다른 ID로 수정 시, 수정 불가
+- 다른 ID로 수정 시, 수정 불가
   ![image](https://github.com/kyudori/Spring-Bulletin-Board/assets/57388014/55e5b532-71ca-4940-8eb5-1c9fcefbbf9b)
 7. 내가 작성한 글 GET, http://localhost:8080/api/articles/myarticles
   ![image](https://github.com/kyudori/Spring-Bulletin-Board/assets/57388014/652175ef-0ab6-46a6-ac45-79936f7afd63)
