@@ -47,22 +47,23 @@ public class ArticleService {
         return articleRepository.save(article);
     }
 
-    public Article update(Long id, ArticleDto dto) {
+    public Article update(Long id, ArticleDto dto, String username) {
         Article article = articleRepository.findById(id).orElseThrow(() -> new RuntimeException("Article not found"));
+        if (!article.getMember().getEmail().equals(username)) {
+            throw new SecurityException("Article update failed! You are not the author.");
+        }
         article.setTitle(dto.getTitle());
         article.setContent(dto.getContent());
         return articleRepository.save(article);
     }
 
-    public Article delete(Long id) {
+    public boolean delete(Long id, String username) {
         Article article = articleRepository.findById(id).orElseThrow(() -> new RuntimeException("Article not found"));
+        if (!article.getMember().getEmail().equals(username)) {
+            return false;
+        }
         articleRepository.delete(article);
-        return article;
-    }
-
-    public boolean checkMyArticle(Long id, String username) {
-        Article article = articleRepository.findById(id).orElse(null);
-        return article != null && article.getMember().getEmail().equals(username);
+        return true;
     }
 
     public Page<Article> printMyArticle(String username, Pageable pageable) {

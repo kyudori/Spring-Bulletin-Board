@@ -3,17 +3,22 @@ package com.example.firstproject.service;
 import com.example.firstproject.dto.CommentDto;
 import com.example.firstproject.entity.Article;
 import com.example.firstproject.entity.Comment;
+import com.example.firstproject.entity.Member;
 import com.example.firstproject.repository.ArticleRepository;
 import com.example.firstproject.repository.CommentRepository;
+import com.example.firstproject.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 public class CommentService {
     @Autowired
     private CommentRepository commentRepository;
@@ -21,74 +26,85 @@ public class CommentService {
     @Autowired
     private ArticleRepository articleRepository;
 
+    @Autowired
+    private MemberRepository memberRepository;
+
     public List<CommentDto> comments(Long articleId) {
-        /*// 1. 댓글 조회
-        List<Comment> comments = commentRepository.findByArticleId(articleId);
-
-        // 2. 엔티티 -> DTO 변환
-        List<CommentDto> dtos = new ArrayList<CommentDto>();
-        for (int i = 0; i < comments.size(); i++) {
-            Comment c = comments.get(i);
-            CommentDto dto = CommentDto.createCommentDto(c);
-            dtos.add(dto);
-        }*/
-
-        // 3. 결과 반환
         return commentRepository.findByArticleId(articleId)
                 .stream()
-                .map(comment -> CommentDto.createCommentDto(comment))
+                .map(comment -> {
+                    String nickname = comment.getMember().getNickname();
+                    return CommentDto.createCommentDto(comment, nickname);
+                })
                 .collect(Collectors.toList());
     }
 
     @Transactional
     public CommentDto create(Long articleId, CommentDto dto) {
-        // 1. 게시글 조회 및 예외 발생
-        Article article = articleRepository.findById(articleId)
-                .orElseThrow(() -> new IllegalArgumentException("댓글 생성 실패! " + "대상 게시글이 없습니다."));
+        try {
+            Article article = articleRepository.findById(articleId)
+                    .orElseThrow(() -> new IllegalArgumentException("댓글 생성 실패! 대상 게시글이 없습니다."));
 
-        // 2. 댓글 엔티티 생성
-        Comment comment = Comment.createComment(dto, article);
+            String username = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
+            Member member = memberRepository.findByEmail(username)
+                    .orElseThrow(() -> new IllegalArgumentException("댓글 생성 실패! 사용자 정보가 없습니다."));
 
-        // 3. 댓글 엔티티를 DB로 저장
-        Comment created = commentRepository.save(comment);
+            dto.setArticleId(article.getId());  // DTO에 올바른 articleId 설정
+            Comment comment = Comment.createComment(dto, article, member);
 
-        // 4. DTO로 변환하여 반환
-        return CommentDto.createCommentDto(created);
+            Comment created = commentRepository.save(comment);
+
+            return CommentDto.createCommentDto(created, member.getNickname());
+        } catch (Exception e) {
+            log.error("댓글 생성 실패: {}", e.getMessage());
+            throw e;
+        }
     }
 
-    public CommentDto update(Long id, CommentDto dto) {
-        // 1. 댓글 조회 및 예외 발생
-        Comment target = commentRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("댓글 수정 실패!" + "대상 댓글이 없습니다."));
-
-        // 2. 댓글 수정
-        target.patch(dto);
-
-        // 3. DB로 갱신
-        Comment updated = commentRepository.save(target);
-
-        // 4. 댓글 엔티티를 DTO로 변환 및 반환
-        return CommentDto.createCommentDto(updated);
-    }
     @Transactional
-    public CommentDto delete(Long id) {
-        // 1. 댓글 조회 및 예외 발생
-        Comment target = commentRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("댓글 삭제 실패! " + "대상이 없습니다."));
+    public CommentDto update(Long articleId, Long commentId, CommentDto dto, String username) {
+        try {
+            Comment target = commentRepository.findById(commentId)
+                    .orElseThrow(() -> new IllegalArgumentException("댓글 수정 실패! 대상 댓글이 없습니다."));
 
-        // 2. 댓글 삭제
-        commentRepository.delete(target);
+            if (!target.getMember().getEmail().equals(username)) {
+                throw new SecurityException("댓글 수정 실패! 작성자가 아닙니다.");
+            }
 
-        // 3. 삭제 댓글을 DTO로 변환 및 반환
-        return CommentDto.createCommentDto(target);
+            target.patch(dto);
+
+            Comment updated = commentRepository.save(target);
+
+            return CommentDto.createCommentDto(updated, target.getMember().getNickname());
+        } catch (Exception e) {
+            log.error("댓글 수정 실패: {}", e.getMessage());
+            throw e;
+        }
     }
 
-    public boolean checkMyComment(Long id, String username) {
-        Optional<Comment> comment = commentRepository.findById(id);
-        return comment.map(checkArticle -> checkArticle.getNickname().equals(username)).orElse(false);
+    @Transactional
+    public boolean delete(Long articleId, Long commentId, String username) {
+        try {
+            Comment target = commentRepository.findById(commentId)
+                    .orElseThrow(() -> new IllegalArgumentException("댓글 삭제 실패! 대상이 없습니다."));
+
+            if (!target.getMember().getEmail().equals(username)) {
+                return false;
+            }
+
+            commentRepository.delete(target);
+            return true;
+        } catch (Exception e) {
+            log.error("댓글 삭제 실패: {}", e.getMessage());
+            return false;
+        }
     }
 
-    public List<Comment> showMyComment(String username) {
-        return commentRepository.findByNickname(username);
+    public List<CommentDto> showMyComment() {
+        String username = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
+        return commentRepository.findByMemberEmail(username)
+                .stream()
+                .map(comment -> CommentDto.createCommentDto(comment, comment.getMember().getNickname()))
+                .collect(Collectors.toList());
     }
 }

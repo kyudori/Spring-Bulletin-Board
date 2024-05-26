@@ -56,19 +56,19 @@ public class ArticleApiController {
     // PATCH
     @PatchMapping("/api/articles/{id}")
     public ResponseEntity<Article> update(@PathVariable Long id, @RequestBody ArticleDto dto) {
-        Article updated = articleService.update(id, dto);
+        String username = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
+        Article updated = articleService.update(id, dto, username);
         return (updated != null) ?
                 ResponseEntity.status(HttpStatus.OK).body(updated) :
-                ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+                ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
     // DELETE
     @DeleteMapping("/api/articles/{id}")
-    public ResponseEntity<Article> delete(@PathVariable Long id) {
-        Article deleted = articleService.delete(id);
-        return (deleted != null) ?
-                ResponseEntity.status(HttpStatus.NO_CONTENT).build() :
-                ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+    public ResponseEntity<Boolean> delete(@PathVariable Long id) {
+        String username = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
+        boolean isDeleted = articleService.delete(id, username);
+        return ResponseEntity.status(isDeleted ? HttpStatus.NO_CONTENT : HttpStatus.FORBIDDEN).body(isDeleted);
     }
 
     // Search
@@ -82,14 +82,6 @@ public class ArticleApiController {
         return (articles != null) ?
                 ResponseEntity.status(HttpStatus.OK).body(articles) :
                 ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
-    // 내가 쓴 글 확인
-    @GetMapping("/api/articles/check/{id}")
-    public ResponseEntity<Boolean> checkMyArticle(@PathVariable Long id) {
-        String username = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
-        boolean check = articleService.checkMyArticle(id, username);
-        return ResponseEntity.status(HttpStatus.OK).body(check);
     }
 
     // 본인이 작성한 글 모두 보기
