@@ -33,11 +33,14 @@ public class JwtTokenProvider {
         this.userDetailsService = userDetailsService;
     }
 
+    //https://jake-seo-dev.tistory.com/722#Bearer
+    //https://velog.io/@subbni/Bearer%EA%B0%80-%EB%AD%90%EC%95%BC
     @PostConstruct
     protected void init() {
         this.secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
     }
 
+    // access token 생성
     public String createAccessToken(Authentication authentication) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         Claims claims = Jwts.claims().setSubject(userDetails.getUsername());
@@ -53,6 +56,7 @@ public class JwtTokenProvider {
                 .compact();
     }
 
+    //refresh token 생성
     public String createRefreshToken(Authentication authentication) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         Claims claims = Jwts.claims().setSubject(userDetails.getUsername());
@@ -77,6 +81,7 @@ public class JwtTokenProvider {
         return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
     }
 
+    //POSTMAN에 Bearer + token 보내면 인증 됨
     public String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
@@ -85,6 +90,7 @@ public class JwtTokenProvider {
         return null;
     }
 
+    // 토큰 유효성 판단
     public boolean validateToken(String token) {
         try {
             Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);

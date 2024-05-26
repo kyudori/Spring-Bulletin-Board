@@ -27,11 +27,13 @@ public class SecurityConfig {
         this.customUserDetailsService = customUserDetailsService;
     }
 
+    //인증 관련 처리
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
+    //비밀 번호 암호화
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -40,14 +42,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                // client가 로그인된 세션 쿠키를 포함하여 요청을 전송해서 공격, JWT는 Header에 보내는 것이기 떄문에 disable해도 괜찮음
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/auth/login", "/auth/register").permitAll()
+                        //허용
                         .requestMatchers("/api/**").authenticated()
+                        //JWT인증을 받아야만 허용
                         .anyRequest().permitAll()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, customUserDetailsService), UsernamePasswordAuthenticationFilter.class);
+                //JWT 인증 처리
         return http.build();
     }
 }

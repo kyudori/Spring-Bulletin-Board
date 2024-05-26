@@ -45,16 +45,19 @@ public class Member implements UserDetails {
         this.articles = articles;
     }
 
+    //getAuthorities(): 사용자의 권한을 반환, 사용자의 역할을 SimpleGrantedAuthority로 래핑하여 반환
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(this.role));
     }
 
+    //이메일을 이름으로 설정
     @Override
     public String getUsername() {
         return this.email;
     }
 
+    //계정의 상태를 나타내는 메서드로, 기본적으로 모든 계정이 활성
     @Override
     public boolean isAccountNonExpired() {
         return true;

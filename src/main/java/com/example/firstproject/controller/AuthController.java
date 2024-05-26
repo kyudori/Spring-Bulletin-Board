@@ -50,9 +50,11 @@ public class AuthController {
     public ResponseEntity<Map<String, String>> login(@RequestBody Map<String, String> credentials) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(credentials.get("email"), credentials.get("password")));
+        // 사용자를 인증
 
         String accessToken = jwtTokenProvider.createAccessToken(authentication);
         String refreshToken = jwtTokenProvider.createRefreshToken(authentication);
+        //토큰 발급 후 저장
 
         return ResponseEntity.ok(Map.of("accessToken", accessToken, "refreshToken", refreshToken));
     }
@@ -60,11 +62,13 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<Map<String, String>> refresh(@RequestBody Map<String, String> request) {
         String refreshToken = request.get("refreshToken");
+        //리프레시 토큰을 검증
         if (jwtTokenProvider.validateToken(refreshToken)) {
             String username = jwtTokenProvider.getUsername(refreshToken);
             UserDetails userDetails = (UserDetails) jwtTokenProvider.getAuthentication(refreshToken).getPrincipal();
             String newAccessToken = jwtTokenProvider.createAccessToken(new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities()));
 
+            //새 토큰 발급
             return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

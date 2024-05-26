@@ -40,6 +40,9 @@ public class ArticleService {
     }
 
     public Article create(ArticleDto dto) {
+        //Spring Security의 SecurityContextHolder를 사용하여 현재 인증된 사용자의 정보를 가져옴
+        //메서드에서 현재 인증된 사용자의 정보를 가져올 때 SecurityContextHolder.getContext().getAuthentication().getPrincipal()을 사용
+        //게시글 작성자가 아니면 SecurityException을 발생시켜 수정/삭제를 방지
         String username = ((UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
         Member member = memberRepository.findByEmail(username).orElseThrow(() -> new RuntimeException("User not found"));
 
