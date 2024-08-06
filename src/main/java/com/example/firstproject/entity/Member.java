@@ -23,17 +23,20 @@ public class Member implements UserDetails {
     private String password;
     private String role;
 
+    private String provider; // 추가된 필드
+
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Article> articles;
 
     public Member() {}
 
-    public Member(Long id, String nickname, String email, String password, String role) {
+    public Member(Long id, String nickname, String email, String password, String role, String provider) {
         this.id = id;
         this.nickname = nickname;
         this.email = email;
         this.password = password;
         this.role = role;
+        this.provider = provider;
     }
 
     public Member(Long id, String nickname, String email, String password, String role, List<Article> articles) {
@@ -45,19 +48,16 @@ public class Member implements UserDetails {
         this.articles = articles;
     }
 
-    //getAuthorities(): 사용자의 권한을 반환, 사용자의 역할을 SimpleGrantedAuthority로 래핑하여 반환
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(this.role));
     }
 
-    //이메일을 이름으로 설정
     @Override
     public String getUsername() {
         return this.email;
     }
 
-    //계정의 상태를 나타내는 메서드로, 기본적으로 모든 계정이 활성
     @Override
     public boolean isAccountNonExpired() {
         return true;

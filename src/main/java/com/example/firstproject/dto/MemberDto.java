@@ -11,9 +11,10 @@ public class MemberDto {
     private String nickname;
     private String email;
     private String password;
+    private String provider;
     private String role;
 
     public Member toEntity() {
-        return new Member(id, nickname, email, password, role);
+        return new Member(id, nickname, email, password, provider, role);
     }
 }

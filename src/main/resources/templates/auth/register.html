@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title><!DOCTYPE html>
+        <html xmlns:th="http://www.thymeleaf.org">
+        <head>
+        <title>Register</title>
+    <script>
+        async function register(event) {
+            event.preventDefault();
+            const nickname = document.getElementById('nickname').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            const response = await fetch('/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ nickname, email, password })
+            });
+
+            if (response.ok) {
+                alert('Registration successful');
+                window.location.href = '/auth/login';
+            } else {
+                alert('Registration failed');
+            }
+        }
+    </script>
+</head>
+<body>
+<h1>Register</h1>
+<form onsubmit="register(event)">
+    <div>
+        <label for="nickname">Nickname:</label>
+        <input type="text" id="nickname" name="nickname" required>
+    </div>
+    <div>
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+    </div>
+    <div>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+    </div>
+    <div>
+        <button type="submit">Register</button>
+    </div>
+</form>
+<div>
+    <a href="/auth/login">Login</a>
+</div>
+</body>
+</html>
+</title>
+</head>
+<body>
+
+</body>
+</html>

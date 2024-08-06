@@ -12,11 +12,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-@RestController
+@Controller
 @RequestMapping("/auth")
 public class AuthController {
 
@@ -32,16 +33,25 @@ public class AuthController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @GetMapping("/login")
+    public String loginForm() {
+        return "auth/login";
+    }
+
+    @GetMapping("/register")
+    public String registerForm() {
+        return "auth/register";
+    }
+
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody MemberDto memberDto) {
         if (memberRepository.findByEmail(memberDto.getEmail()).isPresent()) {
             return ResponseEntity.badRequest().body("Email is already in use");
         }
         memberDto.setPassword(passwordEncoder.encode(memberDto.getPassword())); // 패스워드 암호화
-        if (memberDto.getRole() == null || memberDto.getRole().isEmpty()) {
-            memberDto.setRole("USER");
-        }
         Member member = memberDto.toEntity();
+        member.setProvider("spring"); // 일반 회원가입은 spring으로 설정
+        member.setRole("ROLE_USER"); // 기본 역할 설정
         memberRepository.save(member);
         return ResponseEntity.ok("User registered successfully");
     }

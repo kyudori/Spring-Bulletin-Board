@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title><!DOCTYPE html>
+        <html xmlns:th="http://www.thymeleaf.org">
+        <head>
+        <title>Home</title>
+    <script>
+        function logout() {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            window.location.href = '/auth/login';
+        }
+    </script>
+</head>
+<body>
+<h1>Home</h1>
+<p>Welcome, <span th:text="${member?.nickname}">User</span>!</p>
+
+<h2>All Members</h2>
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Email</th>
+        <th>Nickname</th>
+        <th>Role</th>
+        <th>Provider</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="member : ${members}">
+        <td th:text="${member.id}"></td>
+        <td th:text="${member.email}"></td>
+        <td th:text="${member.nickname}"></td>
+        <td th:text="${member.role}"></td>
+        <td th:text="${member.provider}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<div>
+    <button onclick="logout()">Logout</button>
+</div>
+</body>
+</html>
+</title>
+</head>
+<body>
+
+</body>
+</html>
