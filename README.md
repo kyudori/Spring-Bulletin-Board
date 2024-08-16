@@ -105,6 +105,8 @@
 - URL: `GET /auth/protected-endpoint`
 - 설명: `ROLE_USER` 권한이 필요한 보호된 엔드포인트로, 인증된 사용자만 접근할 수 있습니다.
 
+### - 데이터베이스 설계
+![Untitled](https://github.com/user-attachments/assets/aa8be03a-a845-4558-87ae-4a2418e96899)
 
 
 # 전체 흐름
