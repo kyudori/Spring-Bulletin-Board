@@ -1,3 +1,112 @@
+# 기능 요약
+
+## 1. 게시글 관리 기능
+
+### - 게시글 목록 조회 (페이징 지원)
+- URL: `GET /api/articles`
+- 설명: 모든 게시글을 페이지 단위로 조회합니다.
+
+### - 특정 게시글 조회
+- URL: `GET /api/articles/{id}`
+- 설명: 특정 ID에 해당하는 게시글을 조회합니다.
+
+### - 게시글 생성
+- URL: `POST /api/articles`
+- 설명: 새 게시글을 생성하여 데이터베이스에 저장합니다.
+
+### - 게시글 수정
+- URL: `PATCH /api/articles/{id}`
+- 설명: 기존 게시글의 내용을 수정합니다. 게시글 작성자만 수정할 수 있습니다.
+
+### - 게시글 삭제
+- URL: `DELETE /api/articles/{id}`
+- 설명: 게시글을 삭제합니다. 게시글 작성자만 삭제할 수 있습니다.
+
+### - 게시글 검색
+- URL: `GET /api/articles/search?keyword={keyword}&page={page}&size={size}`
+- 설명: 제목이나 내용에 특정 키워드를 포함하는 게시글을 검색합니다.
+
+### - 본인이 작성한 게시글 조회
+- URL: `GET /api/articles/myarticles?page={page}&size={size}`
+- 설명: 현재 로그인한 사용자가 작성한 게시글을 조회합니다.
+
+## 2. 댓글 관리 기능
+
+### - 댓글 목록 조회
+- URL: `GET /api/articles/comments/{articleId}`
+- 설명: 특정 게시글에 달린 모든 댓글을 조회합니다.
+
+### - 댓글 생성
+- URL: `POST /api/articles/comments/{articleId}`
+- 설명: 특정 게시글에 새로운 댓글을 추가합니다.
+
+### - 댓글 수정
+- URL: `PATCH /api/articles/comments/{articleId}/{commentId}`
+- 설명: 기존 댓글의 내용을 수정합니다. 댓글 작성자만 수정할 수 있습니다.
+
+### - 댓글 삭제
+- URL: `DELETE /api/articles/comments/{articleId}/{commentId}`
+- 설명: 특정 댓글을 삭제합니다. 댓글 작성자만 삭제할 수 있습니다.
+
+### - 본인이 작성한 댓글 조회
+- URL: `GET /api/articles/comments/mycomments`
+- 설명: 현재 로그인한 사용자가 작성한 모든 댓글을 조회합니다.
+
+## 3. 좋아요 기능
+
+### - 좋아요 토글
+- URL: `POST /api/articles/likes/toggle`
+- 설명: 게시글에 대한 좋아요를 추가하거나 제거합니다.
+
+## 4. 사용자 인증 및 인가
+
+### - JWT 기반 인증
+- 설명: 로그인 시 JWT를 발급하며, 이후 요청 시 Authorization 헤더에 토큰을 포함시켜 인증을 수행합니다.
+
+### - OAuth2 기반 소셜 로그인
+- 설명: Google, Naver, Kakao 등의 소셜 로그인을 지원합니다.
+
+### - Spring Security 설정
+- 설명: 엔드포인트 별로 접근 권한을 설정하며, 인증되지 않은 사용자는 특정 엔드포인트에 접근할 수 없습니다.
+
+## 5. 회원 관리
+
+### - 회원 가입 및 로그인
+- URL: `POST /auth/register` (회원 가입)
+- URL: `POST /auth/login` (로그인)
+- URL: `POST /auth/refresh` (리프레시 토큰을 이용한 액세스 토큰 재발급)
+- 설명: 사용자는 이메일과 비밀번호를 이용하여 회원 가입 및 로그인을 할 수 있습니다. 소셜 로그인 시에도 동일한 회원 관리 로직을 따릅니다.
+
+### - 회원 정보 조회 및 관리
+- URL: `GET /members` (회원 목록 조회)
+- URL: `GET /members/{id}` (회원 정보 조회)
+- URL: `POST /join` (회원 가입)
+- URL: `POST /members/update` (회원 정보 수정)
+- URL: `GET /members/{id}/delete` (회원 삭제)
+- 설명: 사용자 정보를 조회하거나, 인증된 사용자가 자신의 정보를 관리할 수 있습니다.
+
+## 6. 관리 기능
+
+### - 회원 권한 부여
+- 설명: 관리자는 특정 사용자에게 권한을 부여하거나 수정할 수 있습니다.
+
+## 7. 추가 기능
+
+### - 랜덤 명언 제공
+- URL: `GET /random-quote`
+- 설명: 랜덤한 명언을 제공하는 페이지입니다.
+
+### - 간단한 인사 페이지
+- URL: `GET /hi` (인사 페이지)
+- URL: `GET /bye` (작별 인사 페이지)
+- 설명: 간단한 인사말을 포함한 페이지입니다.
+
+### - 보호된 엔드포인트 접근
+- URL: `GET /auth/protected-endpoint`
+- 설명: `ROLE_USER` 권한이 필요한 보호된 엔드포인트로, 인증된 사용자만 접근할 수 있습니다.
+
+
+
 # 전체 흐름
 
 SecurityConfig
